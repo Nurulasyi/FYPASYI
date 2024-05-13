@@ -1,0 +1,26 @@
+<!-- pass/templates/pass/detection_result.html -->
+
+<!-- newpass/pass/templates/pass/detection_result.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Detection Result</title>
+</head>
+<body>
+    <h2>Detection Result</h2>
+    <p>Password: {{ password }}</p>
+    <p>Anomaly Status: {{ anomaly_status }}</p>
+    
+    {% if nmap_output %}
+    <h3>Nmap Scan Result:</h3>
+    <pre>{{ nmap_output }}</pre>
+    {% endif %}
+
+    {% if nikto_output %}
+    <h3>Nikto Scan Result:</h3>
+    <pre>{{ nikto_output }}</pre>
+    {% endif %}
+</body>
+</html>
+
+

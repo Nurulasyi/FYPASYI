@@ -1,0 +1,21 @@
+<!-- pass/templates/pass/anomaly_detection.html -->
+
+<!-- newpass/pass/templates/pass/anomaly_detection.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Anomaly Detection</title>
+</head>
+<body>
+    <h2>Anomaly Detection</h2>
+    <form method="post">
+        {% csrf_token %}
+        <label for="password">Password:</label><br>
+        <input type="text" id="password" name="password"><br><br>
+        <label for="target">Target IP or Hostname:</label><br>
+        <input type="text" id="target" name="target"><br><br>
+        <input type="submit" value="Submit">
+    </form>
+</body>
+</html>
+

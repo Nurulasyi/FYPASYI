@@ -1,0 +1,19 @@
+<!-- anomaly_detection.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deteksi Anomali</title>
+</head>
+<body>
+    <h1>Deteksi Anomali</h1>
+    <p>Masukkan password untuk mendeteksi apakah password tersebut termasuk anomali atau tidak:</p>
+    <form action="/detect_anomalies/" method="post">
+        {% csrf_token %}
+        <label for="password">Password:</label><br>
+        <input type="text" id="password" name="password" required><br><br>
+        <input type="submit" value="Deteksi">
+    </form>
+</body>
+</html>
