@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Run Nmap</title>
+    {% load static %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/styles.css' %}">
+</head>
+<body>
+    <div class="container">
+        <h1>Run Nmap</h1>
+        <form method="post">
+            {% csrf_token %}
+            <label for="target">Target (IP or Hostname):</label>
+            <input type="text" id="target" name="target" placeholder="Enter target (e.g., example.com)">
+            <button type="submit">Run Nmap</button>
+        </form>
+        {% if output %}
+            <h2>Scan Results:</h2>
+            <pre>{{ output }}</pre>
+        {% endif %}
+    </div>
+</body>
+</html>
