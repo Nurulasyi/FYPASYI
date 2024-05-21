@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Hydra</title>
+</head>
+<body>
+    <h1>Hydra Tool</h1>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Run Hydra</button>
+    </form>
+    {% if result %}
+        <h2>Result</h2>
+        <pre>{{ result }}</pre>
+    {% endif %}
+    <button onclick="history.back()">Previous</button>
+</body>
+</html>

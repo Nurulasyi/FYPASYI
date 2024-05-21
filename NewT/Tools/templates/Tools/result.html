@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Results</title>
+</head>
+<body>
+    <h1>Suggested Tools</h1>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Goal Pentest</th>
+                <th>Type Software</th>
+                <th>Platform</th>
+                <th>Type Password Attack</th>
+                <th>Hash Type</th>
+                <th>Suggested Tool 1</th>
+                <th>Suggested Tool 2</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for result in results %}
+                <tr>
+                    <td>{{ result.goal_pentest }}</td>
+                    <td>{{ result.type_software }}</td>
+                    <td>{{ result.platform }}</td>
+                    <td>{{ result.type_password_attack }}</td>
+                    <td>{{ result.hash_type }}</td>
+                    <td><a href="{% url result.suggested_tool_1 %}">{{ result.suggested_tool_1 }}</a></td>
+                    <td><a href="{% url result.suggested_tool_2 %}">{{ result.suggested_tool_2 }}</a></td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <button onclick="history.back()">Previous</button>
+    <form method="post" action="{% url 'logout' %}">
+        {% csrf_token %}
+        <button type="submit">Logout</button>
+    </form>
+</body>
+</html>
