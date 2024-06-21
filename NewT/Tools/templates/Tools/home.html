@@ -2,11 +2,113 @@
 <html>
 <head>
     <title>Home</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f2f2f2;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            color: #8A9A5B;
+            text-align: center;
+        }
+        p {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .tool-dropdown {
+            position: relative;
+            display: inline-block;
+            border: 2px solid #8A9A5B;
+            border-radius: 5px;
+            padding: 5px;
+        }
+        .tool-dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #f9f9f9;
+            min-width: 160px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1;
+            padding: 10px;
+        }
+        .tool-dropdown:hover .tool-dropdown-content {
+            display: block;
+        }
+        .tool-dropdown-content a {
+            display: block;
+            color: #333;
+            text-decoration: none;
+            padding: 5px 0;
+        }
+        .tool-dropdown-content a:hover {
+            background-color: #ddd;
+        }
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            border-radius: 25px;
+            text-decoration: none;
+            color: #fff;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+            cursor: pointer;
+        }
+        .button.signup {
+            background: linear-gradient(45deg, #8A9A5B, #5F7042);
+            border: 2px solid #8A9A5B;
+            margin-right: 10px;
+        }
+        .button.login {
+            background: linear-gradient(45deg, #8A9A5B, #5F7042);
+            border: 2px solid #8A9A5B;
+        }
+        .button:hover {
+            background: linear-gradient(45deg, #5F7042, #8A9A5B);
+        }
+        .button:hover {
+            opacity: 0.8;
+        }
+        .tool-dropdown span {
+            font-size: 24px;
+            cursor: pointer;
+            position: relative;
+            top: 2px;
+        }
+        .minus-symbol {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .minus-symbol .minus-line {
+            width: 30px;
+            height: 2px;
+            background-color: #8A9A5B;
+            margin: 2px 0;
+        }
+    </style>
 </head>
 <body>
+    <div class="tool-dropdown">
+        <div class="minus-symbol">
+            <div class="minus-line"></div>
+            <div class="minus-line"></div>
+            <div class="minus-line"></div>
+        </div>
+        <div class="tool-dropdown-content">
+            <a href="{% url 'Nmap' %}">Nmap</a>
+            <a href="{% url 'Hydra' %}">Hydra</a>
+            <a href="{% url 'Ncrack' %}">Ncrack</a>
+            <!-- Add more tool links here as needed -->
+        </div>
+    </div>
     <h1>Welcome to the Pentest Tool Suggestion Website</h1>
-    <p>This website helps you choose the best pentest tools based on your requirements.</p>
-    <a href="{% url 'signup' %}">Sign Up</a>
-    <a href="{% url 'login' %}">Login</a>
+    <p>This website helps you choose the best pentest tools based on password attack.</p>
+    <p>
+        <a href="{% url 'signup' %}" class="button signup">Sign Up</a>
+        <a href="{% url 'login' %}" class="button login">Login</a>
+    </p>
 </body>
 </html>

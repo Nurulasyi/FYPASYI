@@ -67,18 +67,7 @@
     <h1>Ncrack Tool</h1>
     <form method="post">
         {% csrf_token %}
-        <label for="target_ip">Target IP:</label>
-        <input type="text" id="target_ip" name="target_ip" required>
-        
-        <label for="username">Username:</label>
-        <input type="text" id="username" name="username" required>
-        
-        <label for="password_list">Password List:</label>
-        <textarea id="password_list" name="password_list" rows="4" required></textarea>
-        
-        <label for="protocol">Protocol:</label>
-        <input type="text" id="protocol" name="protocol" required>
-        
+        {{ form.as_p }}
         <button type="submit">Run Ncrack</button>
     </form>
     
