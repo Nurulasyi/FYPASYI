@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Nmap</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f2f2f2;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            color: #8A9A5B;
+            text-align: center;
+        }
+        form {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            margin: 20px auto;
+        }
+        input[type="text"], input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        button[type="submit"], button[type="button"] {
+            background-color: #8A9A5B;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+        button[type="submit"]:hover, button[type="button"]:hover {
+            opacity: 0.8;
+        }
+        button, form input {
+            transition: all 0.3s ease;
+        }
+        button:focus, form input:focus {
+            outline: none;
+            box-shadow: 0 0 5px #8A9A5B;
+        }
+        pre {
+            background-color: #f9f9f9;
+            border: 1px solid #ccc;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Nmap Tool</h1>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="button" onclick="history.back()">Previous</button>
+        <button type="submit">Run Nmap</button>
+    </form>
+    {% if result %}
+        <h2>Result</h2>
+        <pre>{{ result }}</pre>
+    {% endif %}
+</body>
+</html>
