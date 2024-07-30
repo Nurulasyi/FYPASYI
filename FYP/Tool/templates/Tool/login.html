@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f2f2f2;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            color: black;
+            text-align: center;
+        }
+        form {
+            background: linear-gradient(45deg, #FFFFED, #5F7042);
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            margin: 20px auto;
+            font-weight: bold;
+        }
+        input[type="text"], input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        button[type="submit"] {
+            background: #FFFFED;
+            color: black;
+            border: 2px solid black;
+            padding: 12px 24px;
+            cursor: pointer;
+            border-radius: 5px;
+            margin: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+        button[type="submit"]:hover {
+            opacity: 0.8;
+        }
+        button, form input {
+            transition: all 0.3s ease;
+        }
+        button:focus, form input:focus {
+            outline: none;
+            box-shadow: 0 0 5px #8A9A5B;
+        }
+        button[type="button"] {
+            background: #FFFFED;
+            color: black;
+            border: 2px solid black;
+            padding: 12px 24px;
+            cursor: pointer;
+            border-radius: 5px;
+            margin: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+        button[type="button"]:hover {
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <h1>Login</h1>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="button" onclick="window.location.href='{% url 'home' %}'">Previous</button>
+        <button type="submit">Login</button>
+    </form>
+</body>
+</html>

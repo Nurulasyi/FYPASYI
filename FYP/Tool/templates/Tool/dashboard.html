@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa; /* Warna latar belakang lebih cerah */
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        .container {
+            text-align: center;
+            max-width: 600px;
+            padding: 30px;
+            border-radius: 10px;
+            background: linear-gradient(45deg, #FFFFED, #5F7042);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Bayangan halus */
+        }
+        h1 {
+            color: black;
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-transform: capitalize;
+        }
+        .button-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+        button {
+            background: #FFFFED;
+            color: black;
+            border: 2px solid black;
+            padding: 12px 24px;
+            cursor: pointer;
+            border-radius: 5px;
+            margin: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #6b7e42; /* Warna latar belakang saat hover */
+        }
+        button:focus {
+            outline: none;
+            box-shadow: 0 0 5px rgba(138, 154, 91, 0.5); /* Bayangan halus saat fokus */
+        }
+        a {
+            text-decoration: none;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome, {{ username|capfirst }}</h1>
+        <div class="button-container">
+            <button onclick="window.location.href='{% url 'add_asset' %}'">Submit Requirements</button>
+            <button onclick="window.location.href='{% url 'historyresults' %}'">Tool Execution History</button>
+            <button onclick="window.location.href='{% url 'result' %}'">View Suggested Tool</button>
+            <button onclick="window.location.href='{% url 'Nmap' %}'">Run Nmap</button>
+            <button onclick="window.location.href='{% url 'medusa' %}'">Run Medusa</button>
+            <button onclick="window.location.href='{% url 'hydra' %}'">Run Hydra</button>
+            <button onclick="window.location.href='{% url 'wfuzz' %}'">Run Wfuzz</button>
+            <button onclick="window.location.href='{% url 'login' %}'">Logout</button>
+        </div>
+    </div>
+</body>
+</html>
