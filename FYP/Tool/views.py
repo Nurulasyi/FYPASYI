@@ -61,17 +61,14 @@ def load_model():
     print("Finished executing Load Model function")
     return model
 
-# Load the model when the server starts
 model = joblib.load('model1.pkl')
 
-# Mapping of numeric identifiers to tool names
 tool_names = {
     0: {'name': 'Hydra', 'url_name': 'hydra'},
     1: {'name': 'Medusa', 'url_name': 'medusa'},
     2: {'name': 'Wfuzz', 'url_name': 'wfuzz'},
 }
 
-# Mapping of numeric identifiers to human-readable names
 goal_pentest_map = {1: 'Web Application', 2: 'Network', 3: 'Cloud'}
 type_software_map = {1: 'Web-based', 2: 'Mobile', 3: 'Network'}
 platform_map = {1: 'Windows', 2: 'Linux', 3: 'MacOS', 4: 'Cloud'}
@@ -90,7 +87,7 @@ def signup(request):
         form = UserCreationForm(request.POST)
         if form.is_valid():
             user = form.save(commit=False)
-            user.email = request.POST.get('email')  # Dapatkan email daripada POST data
+            user.email = request.POST.get('email')  
             user.save()
             username = form.cleaned_data.get('username')
             password = form.cleaned_data.get('password1')
@@ -148,7 +145,7 @@ def user_results(request):
         
         print(f'User {request.user.username} disagree, User submitted user results with goal: {goal_pentest}, type_software: {type_software}, platform: {platform}, type_password_attack: {type_password_attack}, hash_type: {hash_type}, suggested_tool: {suggested_tool}')
         
-        # Simpan data baru dalam UserResult
+    
         UserResult.objects.create(
             user=request.user,
             goal_pentest=goal_pentest,
@@ -186,7 +183,7 @@ def user_results(request):
             
             print(f'User {request.user.username} agreed with shown results goal: {result["goal_pentest"]}, type_software: {result["type_software"]}, platform: {result["platform"]}, type_password_attack: {result["type_password_attack"]}, hash_type: {result["hash_type"]}, suggested_tool_1: {result["suggested_tool_1"]}, suggested_tool_2: {result["suggested_tool_2"]}')
             
-            # Simpan hasil yang disarankan ke dalam UserResult
+        
             UserResult.objects.create(
                 user=request.user,
                 goal_pentest=result['goal_pentest'],
@@ -261,22 +258,18 @@ def hydra(request):
             username = form.cleaned_data['username']
             password_list = form.cleaned_data['password_list']
             
-            # Write the password list to a temporary file
             with open('passwords.txt', 'w') as f:
                 f.write(password_list)
             
-            # Analyze password strength
             password_strengths = {}
             for password in password_list.splitlines():
                 password_strengths[password] = check_password_strength(password)
-            
-            # Adjust Hydra command based on the service type
+
             if target_service == 'http-get':
                 command = f'hydra -l {username} -P passwords.txt {target_service}://{target_ip}/'
             else:
                 command = f'hydra -l {username} -P passwords.txt {target_service}://{target_ip}'
             
-            # Limit the number of parallel tasks to avoid SSH configuration issues
             command += ' -t 4'
             
             try:
@@ -321,11 +314,9 @@ def medusa_view(request):
             password_list = form.cleaned_data['password_list']
             protocol = form.cleaned_data['protocol']
 
-            # Write the password list to a temporary file
             with open('passwords.txt', 'w') as f:
                 f.write(password_list)
 
-            # Execute Medusa command
             command = f'medusa -h {target_ip} -u {username} -P passwords.txt -M {protocol}'
             try:
                 result = subprocess.check_output(command, shell=True, stderr=subprocess.STDOUT).decode()
@@ -350,7 +341,7 @@ def nmap(request):
         if form.is_valid():
             target_ip = form.cleaned_data['target_ip']
             scan_type = form.cleaned_data['scan_type']
-            # Process the nmap command
+
             if scan_type == 'sS':
                 command = f'sudo nmap -{scan_type} {target_ip}'
             else:
@@ -359,8 +350,7 @@ def nmap(request):
                 result = subprocess.check_output(command, shell=True).decode()
             except subprocess.CalledProcessError as e:
                 result = f"An error occurred: {e.output.decode()}"
-                
-            # Tambahkan kod berikut untuk menyimpan hasil ke dalam ToolResult
+
             ToolResult.objects.create(user=request.user, tool_name="Nmap", result=result)
             print("Successfully executing Nmap function")
             print("Finished executing Nmap function")
@@ -394,11 +384,9 @@ def wfuzz_view(request):
             target_url = form.cleaned_data['target_url']
             wordlist = form.cleaned_data['wordlist']
 
-            # Write the wordlist to a temporary file
             with open('wordlist.txt', 'w') as f:
                 f.write(wordlist)
 
-            # Execute Wfuzz command
             command = f'wfuzz -c -z file,wordlist.txt -u {target_url}'
             try:
                 raw_result = subprocess.check_output(command, shell=True, text=True)
