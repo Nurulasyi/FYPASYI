@@ -198,17 +198,12 @@
             const formData = new FormData(form);
             const rowIndex = formData.get("row_index");
             const suggestedTool = formData.get("suggested_tool");
-
-            // Generate a new URL based on the suggested tool name
             const newToolUrlName = suggestedTool.toLowerCase().replace(/\s+/g, '_');
 
-            // Update the UI with the new suggestion
             document.getElementById(`suggested-tool-1-${rowIndex}`).innerHTML = `<a href="/${newToolUrlName}/">${suggestedTool}</a>`;
 
-            // Display thank you message
             document.getElementById("thank-you-message").style.display = "block";
 
-            // Optionally send the suggestion to the server
             fetch("{% url 'user_results' %}", {
                 method: "POST",
                 body: formData,
@@ -222,7 +217,7 @@
                             setTimeout(() => {
                                 closePopup();
                                 document.getElementById("thank-you-message").style.display = "none";
-                            }, 2000);  // Close the popup after 2 seconds
+                            }, 2000); 
                         } else {
                             alert("There was an error saving your suggestion.");
                         }
