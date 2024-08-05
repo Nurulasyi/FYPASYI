@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload and Train Model</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        .container {
+            text-align: center;
+            max-width: 800px;
+            padding: 30px;
+            border-radius: 10px;
+            background: linear-gradient(45deg, #FFFFED, #5F7042);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: black;
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-transform: capitalize;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        button {
+            background: #FFFFED;
+            color: black;
+            border: 2px solid black;
+            padding: 12px 24px;
+            cursor: pointer;
+            border-radius: 5px;
+            margin: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #6b7e42;
+        }
+        button:focus {
+            outline: none;
+            box-shadow: 0 0 5px rgba(138, 154, 91, 0.5);
+        }
+        .result {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #FFFFED;
+            border-radius: 6px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            color: black;
+        }
+        .result a {
+            text-decoration: none;
+            padding: 12px 24px;
+            color: white;
+            background-color: #5F7042;
+            border-radius: 6px;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+            font-weight: bold;
+            display: inline-block;
+            margin-top: 10px;
+        }
+        .result a:hover {
+            background-color: #4b5d36;
+            transform: scale(1.05);
+        }
+        .back-button {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .back-button a {
+            text-decoration: none;
+            padding: 12px 24px;
+            color: white;
+            background-color: #5F7042;
+            border-radius: 6px;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+            font-weight: bold;
+            display: inline-block;
+        }
+        .back-button a:hover {
+            background-color: #4b5d36;
+            transform: scale(1.05);
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Upload and Train Model</h1>
+
+        <!-- Bagian Upload CSV -->
+        <form id="upload-csv-form" method="post" enctype="multipart/form-data" {% if accuracy or message %}class="hidden"{% endif %}>
+            {% csrf_token %}
+            <div id="csv-upload-container">
+                <label for="csv_file">Select a CSV file:</label>
+                {{ form.csv_file }}
+                <button type="submit" name="action" value="upload_csv">Train Model</button>
+            </div>
+        </form>
+
+        <!-- Bagian Hasil Akurasi Model -->
+        {% if accuracy %}
+            <div id="result-container" class="result">
+                <h2>Model Accuracy: {{ accuracy }}</h2>
+                <a href="{{ download_link }}" id="download-link">Download Trained Model</a>
+            </div>
+        {% endif %}
+
+        <!-- Bagian Upload Model Baru -->
+        <h2 id="upload-new-model-title" {% if not message %}class="hidden"{% endif %}>Upload New Model</h2>
+        <form id="upload-model-form" method="post" enctype="multipart/form-data" {% if not message %}class="hidden"{% endif %}>
+            {% csrf_token %}
+            <div id="model-upload-container">
+                <label for="model_file">Select a Model file:</label>
+                {{ upload_model_form.model_file }}
+                <button type="submit" name="action" value="upload_model">Upload Model</button>
+            </div>
+        </form>
+
+         <!-- Bagian Pesan Sukses -->
+        {% if message %}
+            <div id="message-container" class="result">
+                <p>{{ message }}</p>
+            </div>
+        {% endif %}
+        
+        <div class="back-button">
+            <a href="{% url 'dashboard' %}">Back to Dashboard</a>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const uploadCSVForm = document.getElementById('upload-csv-form');
+            const resultContainer = document.getElementById('result-container');
+            const downloadLink = document.getElementById('download-link');
+            const uploadNewModelTitle = document.getElementById('upload-new-model-title');
+            const uploadModelForm = document.getElementById('upload-model-form');
+            const modelFileLabel = document.getElementById('model-file-label');
+            const uploadModelButton = document.getElementById('upload-model-button');
+            const messageContainer = document.getElementById('message-container');
+
+            // Jika resultContainer ada, sembunyikan upload CSV form
+            if (resultContainer) {
+                uploadCSVForm.classList.add('hidden');
+                // Tampilkan form untuk upload model baru setelah download
+                if (downloadLink) {
+                    downloadLink.addEventListener('click', function () {
+                        uploadNewModelTitle.classList.remove('hidden');
+                        uploadModelForm.classList.remove('hidden');
+                    });
+                }
+            }
+
+            // Jika ada message, sembunyikan bagian model file
+            if (messageContainer) {
+                uploadNewModelTitle.classList.add('hidden');
+                uploadModelForm.classList.add('hidden');
+            }
+        });
+    </script>
+</body>
+</html>
