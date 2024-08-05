@@ -501,7 +501,7 @@ def train_model_view(request):
 
                 try:
                     if os.path.exists(model_file_path):
-                        os.rename(model_file_path, os.path.join(trained_models_dir, 'model.bka'))
+                        os.rename(model_file_path, os.path.join(trained_models_dir, 'model.bak'))
 
                     with open(model_file_path, 'wb+') as destination:
                         for chunk in model_file.chunks():
@@ -510,7 +510,7 @@ def train_model_view(request):
                     return render(request, 'Tool/train_model.html', {
                         'form': UploadCSVForm(),
                         'upload_model_form': upload_model_form,
-                        'message': 'Model uploaded successfully and the old model was changed into .bka file.'
+                        'message': 'Model uploaded successfully and the old model was changed into .bak file.'
                     })
 
                 except SuspiciousFileOperation:
