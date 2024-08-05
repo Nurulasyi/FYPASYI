@@ -5,14 +5,21 @@ from django.contrib.auth import login, authenticate
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_protect
-from django.http import JsonResponse
-from .forms import AssetForm, HydraForm, NmapForm, MedusaForm, WfuzzForm
+from django.http import JsonResponse, HttpResponseForbidden
+from .forms import AssetForm, HydraForm, NmapForm, MedusaForm, WfuzzForm, UploadCSVForm, UploadModelForm
 from .models import Asset, UserResult, ToolResult
+from django.shortcuts import render
+from django.core.files.storage import FileSystemStorage, default_storage
+from django.core.files.base import ContentFile
+from django.conf import settings
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score
 import joblib
 import pandas as pd
 import subprocess
 import re
 import os
+
 
 def load_data_from_db():
     records = Asset.objects.all()
@@ -87,7 +94,7 @@ def signup(request):
         form = UserCreationForm(request.POST)
         if form.is_valid():
             user = form.save(commit=False)
-            user.email = request.POST.get('email')  
+            user.email = request.POST.get('email') 
             user.save()
             username = form.cleaned_data.get('username')
             password = form.cleaned_data.get('password1')
@@ -145,7 +152,6 @@ def user_results(request):
         
         print(f'User {request.user.username} disagree, User submitted user results with goal: {goal_pentest}, type_software: {type_software}, platform: {platform}, type_password_attack: {type_password_attack}, hash_type: {hash_type}, suggested_tool: {suggested_tool}')
         
-    
         UserResult.objects.create(
             user=request.user,
             goal_pentest=goal_pentest,
@@ -183,7 +189,6 @@ def user_results(request):
             
             print(f'User {request.user.username} agreed with shown results goal: {result["goal_pentest"]}, type_software: {result["type_software"]}, platform: {result["platform"]}, type_password_attack: {result["type_password_attack"]}, hash_type: {result["hash_type"]}, suggested_tool_1: {result["suggested_tool_1"]}, suggested_tool_2: {result["suggested_tool_2"]}')
             
-        
             UserResult.objects.create(
                 user=request.user,
                 goal_pentest=result['goal_pentest'],
@@ -222,7 +227,19 @@ def result(request):
     print("Finished executing All Suggestion Result function")
     return render(request, 'Tool/result.html', {'results': results})
 
-from django.http import HttpResponseForbidden
+
+@login_required
+def dashboard(request):
+    print('Dashboard function is being executed')
+    return render(request, 'Tool/dashboard.html', {'username': request.user.username})
+    print("Finished executing Dasboard function")
+
+@login_required
+def historyresults(request):
+    print('Tool History function is being executed')
+    results = ToolResult.objects.filter(user=request.user).order_by('-created_at')
+    print("Finished executing Tool History function")
+    return render(request, 'Tool/historyresults.html', {'results': results})
 
 @login_required
 def delete_asset(request, asset_id):
@@ -245,47 +262,52 @@ def check_password_strength(password):
     else:
         print("Finished executing Checking Password Strength function")
         return "Strong"
-        
+
 @login_required
 def hydra(request):
     print('Hydra function is being executed')
     result = None
+    password_strengths = {}
     if request.method == 'POST':
-        form = HydraForm(request.POST)
+        form = HydraForm(request.POST, request.FILES)
         if form.is_valid():
             target_service = form.cleaned_data['target_service']
             target_ip = form.cleaned_data['target_ip']
             username = form.cleaned_data['username']
-            password_list = form.cleaned_data['password_list']
-            
-            with open('passwords.txt', 'w') as f:
-                f.write(password_list)
-            
-            password_strengths = {}
-            for password in password_list.splitlines():
-                password_strengths[password] = check_password_strength(password)
+            password_file = request.FILES['password_file']
+
+            fs = FileSystemStorage()
+            filename = fs.save(password_file.name, password_file)
+            uploaded_file_path = fs.path(filename)
+
+            with open(uploaded_file_path, 'r') as f:
+                password_list = f.readlines()
+                for password in password_list:
+                    password = password.strip()
+                    password_strengths[password] = check_password_strength(password)
 
             if target_service == 'http-get':
-                command = f'hydra -l {username} -P passwords.txt {target_service}://{target_ip}/'
+                command = f'hydra -l {username} -P {uploaded_file_path} {target_service}://{target_ip}/'
             else:
-                command = f'hydra -l {username} -P passwords.txt {target_service}://{target_ip}'
-            
+                command = f'hydra -l {username} -P {uploaded_file_path} {target_service}://{target_ip}'
+
             command += ' -t 4'
-            
+
             try:
                 result = subprocess.check_output(command, shell=True, text=True)
             except subprocess.CalledProcessError as e:
                 result = f"An error occurred: {e.output.decode()}"
-            
+
             ToolResult.objects.create(user=request.user, tool_name="Hydra", result=result)
+            fs.delete(filename)  
             print("Successfully executing Hydra function")
             return render(request, 'Tool/hydra.html', {'form': form, 'result': result, 'password_strengths': password_strengths})
-                      
+
     else:
         form = HydraForm()
-        
-    print("Finished executing Hydra function")    
-    return render(request, 'Tool/hydra.html', {'form': form, 'result': None})
+
+    print("Finished executing Hydra function")
+    return render(request, 'Tool/hydra.html', {'form': form, 'result': None, 'password_strengths': password_strengths})
     
 def remove_ansi_escape_sequences(text):
     print('Removing ansi is being executed')
@@ -306,31 +328,41 @@ def remove_ansi_escape_sequences(text):
 def medusa_view(request):
     print('Medusa function is being executed')
     result = None
+    password_strengths = {}
     if request.method == 'POST':
-        form = MedusaForm(request.POST)
+        form = MedusaForm(request.POST, request.FILES)
         if form.is_valid():
             target_ip = form.cleaned_data['target_ip']
             username = form.cleaned_data['username']
-            password_list = form.cleaned_data['password_list']
+            password_file = request.FILES['password_file']
             protocol = form.cleaned_data['protocol']
 
-            with open('passwords.txt', 'w') as f:
-                f.write(password_list)
+            fs = FileSystemStorage()
+            filename = fs.save(password_file.name, password_file)
+            uploaded_file_path = fs.path(filename)
 
-            command = f'medusa -h {target_ip} -u {username} -P passwords.txt -M {protocol}'
+            with open(uploaded_file_path, 'r') as f:
+                password_list = f.readlines()
+                for password in password_list:
+                    password = password.strip()
+                    password_strengths[password] = check_password_strength(password)
+
+            command = f'medusa -h {target_ip} -u {username} -P {uploaded_file_path} -M {protocol}'
             try:
                 result = subprocess.check_output(command, shell=True, stderr=subprocess.STDOUT).decode()
             except subprocess.CalledProcessError as e:
                 result = f"An error occurred: {e.output.decode()}"
-            
+
             ToolResult.objects.create(user=request.user, tool_name="Medusa", result=result)
+            fs.delete(filename)  
             print("Successfully executing Medusa function")
-            
+            return render(request, 'Tool/medusa.html', {'form': form, 'result': result, 'password_strengths': password_strengths})
+
     else:
         form = MedusaForm()
-        
+
     print("Finished executing Medusa function")
-    return render(request, 'Tool/medusa.html', {'form': form, 'result': result})
+    return render(request, 'Tool/medusa.html', {'form': form, 'result': None, 'password_strengths': password_strengths})
     
     
 @login_required
@@ -359,61 +391,35 @@ def nmap(request):
         form = NmapForm()
     return render(request, 'Tool/nmap.html', {'form': form, 'result': None})
 
-def remove_ansi_escape_sequences(text):
-    print('Removing ansi is being executed')
-    ansi_escape = re.compile(r'''
-        \x1B  # ESC
-        (?:   # 7-bit C1 Fe (except CSI)
-            [@-Z\\-_]
-        |     # or [ for CSI, followed by a control sequence
-            \[
-            [0-?]*  # Parameter bytes
-            [ -/]*  # Intermediate bytes
-            [@-~]   # Final byte
-        )
-    ''', re.VERBOSE)
-    return ansi_escape.sub('', text)
-
 @login_required
 def wfuzz_view(request):
     print('Wfuzz function is being executed')
     result = None
     if request.method == 'POST':
-        form = WfuzzForm(request.POST)
+        form = WfuzzForm(request.POST, request.FILES)
         if form.is_valid():
             target_url = form.cleaned_data['target_url']
-            wordlist = form.cleaned_data['wordlist']
+            wordlist_file = request.FILES['wordlist_file']
 
-            with open('wordlist.txt', 'w') as f:
-                f.write(wordlist)
+            fs = FileSystemStorage()
+            filename = fs.save(wordlist_file.name, wordlist_file)
+            uploaded_file_path = fs.path(filename)
 
-            command = f'wfuzz -c -z file,wordlist.txt -u {target_url}'
+            command = f'wfuzz -c -z file,{uploaded_file_path} -u {target_url}'
             try:
                 raw_result = subprocess.check_output(command, shell=True, text=True)
                 result = remove_ansi_escape_sequences(raw_result)
             except subprocess.CalledProcessError as e:
                 result = f"An error occurred: {e.output.decode()}"
-                
+
             ToolResult.objects.create(user=request.user, tool_name="Wfuzz", result=result)
+            fs.delete(filename)  
             print("Successfully executing Wfuzz function")
     else:
         form = WfuzzForm()
-    
+
     print("Finished executing Wfuzz function")
     return render(request, 'Tool/wfuzz.html', {'form': form, 'result': result})
-
-@login_required
-def dashboard(request):
-    print('Dashboard function is being executed')
-    return render(request, 'Tool/dashboard.html', {'username': request.user.username})
-    print("Finished executing Dasboard function")
-
-@login_required
-def historyresults(request):
-    print('Tool History function is being executed')
-    results = ToolResult.objects.filter(user=request.user).order_by('-created_at')
-    print("Finished executing Tool History function")
-    return render(request, 'Tool/historyresults.html', {'results': results})
 
 @login_required
 def delete_tool_result(request, result_id):
@@ -425,3 +431,100 @@ def delete_tool_result(request, result_id):
     else:
         print("Finished executing Deleting Tool function")
         return HttpResponseForbidden("You are not allowed to delete this result.")
+
+from django.shortcuts import render
+from django.core.files.storage import default_storage
+from django.core.files.base import ContentFile
+from django.conf import settings
+import os
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score
+import joblib
+from .forms import UploadCSVForm, UploadModelForm
+from django.contrib.auth.decorators import login_required
+from django.core.exceptions import SuspiciousFileOperation
+
+@login_required
+def train_model_view(request):
+    if not os.path.exists(settings.MEDIA_ROOT):
+        os.makedirs(settings.MEDIA_ROOT)
+
+    uploaded_csvs_dir = os.path.join(settings.MEDIA_ROOT, 'uploaded_csvs')
+    trained_models_dir = os.path.join(settings.MEDIA_ROOT, 'trained_models')
+
+    if not os.path.exists(uploaded_csvs_dir):
+        os.makedirs(uploaded_csvs_dir)
+
+    if not os.path.exists(trained_models_dir):
+        os.makedirs(trained_models_dir)
+
+    if request.method == 'POST':
+        if 'csv_file' in request.FILES:
+            form = UploadCSVForm(request.POST, request.FILES)
+            if form.is_valid():
+                csv_file = request.FILES['csv_file']
+                file_name = default_storage.save('uploaded_csvs/' + csv_file.name, ContentFile(csv_file.read()))
+                file_path = os.path.join(settings.MEDIA_ROOT, file_name)
+
+                data = pd.read_csv(file_path)
+
+                X = data.iloc[:, :-1]
+                y = data.iloc[:, -1]
+
+                X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+                model = RandomForestClassifier(n_estimators=100, random_state=42)
+                model.fit(X_train, y_train)
+
+                y_pred = model.predict(X_test)
+                accuracy = accuracy_score(y_test, y_pred)
+
+                pkl_file_path = os.path.join(trained_models_dir, 'model.pkl')
+                joblib.dump(model, pkl_file_path)
+
+                download_link = os.path.join(settings.MEDIA_URL, 'trained_models', 'model.pkl')
+                return render(request, 'Tool/train_model.html', {
+                    'form': form,
+                    'upload_model_form': UploadModelForm(),
+                    'accuracy': accuracy,
+                    'download_link': download_link,
+                })
+
+        elif 'model_file' in request.FILES:
+            upload_model_form = UploadModelForm(request.POST, request.FILES)
+            if upload_model_form.is_valid():
+                model_file = request.FILES['model_file']
+                model_file_name = 'model.pkl'
+                model_file_path = os.path.join(trained_models_dir, model_file_name)
+
+                try:
+                    if os.path.exists(model_file_path):
+                        os.rename(model_file_path, os.path.join(trained_models_dir, 'model.bka'))
+
+                    with open(model_file_path, 'wb+') as destination:
+                        for chunk in model_file.chunks():
+                            destination.write(chunk)
+
+                    return render(request, 'Tool/train_model.html', {
+                        'form': UploadCSVForm(),
+                        'upload_model_form': upload_model_form,
+                        'message': 'Model uploaded successfully and the old model was changed into .bka file.'
+                    })
+
+                except SuspiciousFileOperation:
+                    return render(request, 'Tool/train_model.html', {
+                        'form': UploadCSVForm(),
+                        'upload_model_form': upload_model_form,
+                        'message': 'Invalid file operation detected.'
+                    })
+
+    else:
+        form = UploadCSVForm()
+        upload_model_form = UploadModelForm()
+
+    return render(request, 'Tool/train_model.html', {
+        'form': form,
+        'upload_model_form': upload_model_form
+    })
