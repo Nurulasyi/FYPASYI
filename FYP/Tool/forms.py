@@ -31,3 +31,9 @@ class MedusaForm(forms.Form):
 class WfuzzForm(forms.Form):
     target_url = forms.CharField(label='Target URL', max_length=200)
     wordlist = forms.CharField(label='Passwordlist', widget=forms.Textarea)
+
+class UploadCSVForm(forms.Form):
+    csv_file = forms.FileField(label='Select a CSV file')
+
+class UploadModelForm(forms.Form):
+    model_file = forms.FileField(label='Upload a new model')
