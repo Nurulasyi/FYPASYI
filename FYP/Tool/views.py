@@ -8,7 +8,7 @@ from django.views.decorators.csrf import csrf_protect
 from django.http import JsonResponse, HttpResponseForbidden
 from .forms import AssetForm, HydraForm, NmapForm, MedusaForm, WfuzzForm, UploadCSVForm, UploadModelForm
 from .models import Asset, UserResult, ToolResult
-from django.shortcuts import render
+from django.core.exceptions import SuspiciousFileOperation
 from django.core.files.storage import FileSystemStorage, default_storage
 from django.core.files.base import ContentFile
 from django.conf import settings
@@ -431,20 +431,6 @@ def delete_tool_result(request, result_id):
     else:
         print("Finished executing Deleting Tool function")
         return HttpResponseForbidden("You are not allowed to delete this result.")
-
-from django.shortcuts import render
-from django.core.files.storage import default_storage
-from django.core.files.base import ContentFile
-from django.conf import settings
-import os
-import pandas as pd
-from sklearn.model_selection import train_test_split
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import accuracy_score
-import joblib
-from .forms import UploadCSVForm, UploadModelForm
-from django.contrib.auth.decorators import login_required
-from django.core.exceptions import SuspiciousFileOperation
 
 @login_required
 def train_model_view(request):
